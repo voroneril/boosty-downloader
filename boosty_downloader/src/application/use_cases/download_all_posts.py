@@ -16,6 +16,26 @@ from boosty_downloader.src.infrastructure.path_sanitizer import (
     sanitize_string,
 )
 
+#Long dirname fix START
+import sys
+
+def utf8_char_len(c):
+    codepoint = ord(c)
+    if codepoint <= 0x7f:
+        return 1
+    if codepoint <= 0x7ff:
+        return 2
+    if codepoint <= 0xffff:
+        return 3
+    if codepoint <= 0x10ffff:
+        return 4
+    raise ValueError('Invalid Unicode character: ' + hex(codepoint))
+
+def utf8len(s):
+    return sum(utf8_char_len(c) for c in s)
+
+#Long dirname fix END
+
 
 class DownloadAllPostUseCase:
     """
@@ -71,10 +91,26 @@ class DownloadAllPostUseCase:
                 post_dto.title = (
                     sanitize_string(post_dto.title).replace('.', '').strip()
                 )
+                
+                #Long dirname fix START
+                #'5bd54c48-f79e-4e09-aa09-47f8ba83afec':
+                human_filename = post_dto.title
+                char_count = utf8len(human_filename);
+                #2025-11-13 - НОВИНКА!! Русификатор Decktamer [128] Карточная стратегия, симулятор рогалик-головоломка (c1900ad3)
+                #255-(13+11) = 231
+                if char_count > 231 :
+                    short_txt = '';
+                    for c in human_filename :
+                        c_utf8len = utf8len(short_txt + c)
+                        if c_utf8len <= 231 :
+                            short_txt = short_txt + c;
+                    human_filename = short_txt
+                #Long dirname fix END
+
 
                 # date - TITLE (UUID_PART) for deduplication in case of same names with different posts
-                full_post_title = f'{post_dto.created_at.date()} - {post_dto.title} ({post_dto.id[:8]})'
-
+                full_post_title = f'{post_dto.created_at.date()} - {human_filename} ({post_dto.id[:8]})'
+                        
                 single_post_use_case = DownloadSinglePostUseCase(
                     destination=self.destination / full_post_title,
                     post_dto=post_dto,
