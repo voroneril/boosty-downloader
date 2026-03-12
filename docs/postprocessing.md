@@ -97,4 +97,5 @@ Thank you for your time and effort! 🙌
 
 [fix_bin_to_known_types_v5.py](https://github.com/user-attachments/files/22618327/fix_bin_to_known_types_v5.py)
 
+Source: https://github.com/Glitchy-Sheep/boosty-downloader/issues/75
 
